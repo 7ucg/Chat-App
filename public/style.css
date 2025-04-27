@@ -12,33 +12,35 @@
     border-radius: 8px;
     cursor: pointer;
     z-index: 1100; /* Über Sidebar */
-  }
-  
-  /* Basis */
-  body {
+}
+
+/* Basis */
+body, html {
     margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
     font-family: Arial, sans-serif;
     background-color: #121212;
     color: #fff;
-    overflow: hidden; /* Verhindert ungewolltes Scrollen */
-  }
-  
-  /* Auth-Seiten */
-  .auth-container {
+}
+
+/* Auth-Seiten */
+.auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     background-color: #1a1a1a;
-  }
-  
-  #login-form, #register-form {
+}
+
+#login-form, #register-form {
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
-  
-  input {
+}
+
+input {
     margin: 10px 0;
     padding: 10px;
     width: 200px;
@@ -46,9 +48,9 @@
     border: 1px solid #ff3c00;
     color: white;
     border-radius: 5px;
-  }
-  
-  button {
+}
+
+button {
     background: #ff3c00;
     border: none;
     padding: 10px 20px;
@@ -57,113 +59,150 @@
     color: white;
     cursor: pointer;
     transition: background 0.3s;
-  }
-  
-  button:hover {
+}
+
+button:hover {
     background: #ff5e26;
-  }
-  
-  p {
+}
+
+p {
     color: #aaa;
-  }
-  
-  span {
+}
+
+span {
     cursor: pointer;
     color: #ff3c00;
-  }
-  
-  /* Chat Layout */
-  .chat-layout {
-    display: flex;
-    margin-left: 0;
-    height: 100vh;
-  }
+}
 
-  
-  .sidebar h3 {
+/* Chat Layout */
+.chat-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 250px;
+    background-color: #1e1e1e;
+    position: relative;
+    will-change: left;
+    transition: left 0.2s ease-out;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.sidebar h3 {
     margin-top: 0;
     color: #ff3c00;
-  }
-  
-  .sidebar ul {
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.sidebar-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #333;
+    background-color: #1e1e1e;
+}
+
+.sidebar-footer button {
+    width: 100%;
+    background: #ff3c00;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.sidebar-footer button:hover {
+    background: #ff5e26;
+}
+
+.sidebar ul {
     list-style: none;
     padding: 0;
-  }
-  
-  .sidebar li {
+}
+
+.sidebar li {
     margin: 10px 0;
     cursor: pointer;
     background: #2c2c2c;
     padding: 10px;
     border-radius: 8px;
     transition: background 0.3s;
-  }
-  
-  .sidebar li:hover,
-  .sidebar li.active {
+}
+
+.sidebar li:hover,
+.sidebar li.active {
     background: #ff3c00;
     color: white;
     font-weight: bold;
-  }
-  
-  /* Profil oben */
-  .profile {
+}
+
+.profile {
     display: flex;
     align-items: center;
     gap: 10px;
     margin-bottom: 20px;
     padding: 10px;
     cursor: pointer;
-  }
-  
-  .profile img {
+}
+
+.profile img {
     width: 50px;
     height: 50px;
     border-radius: 50%;
     object-fit: cover;
     background-color: #333;
     border: 2px solid #ff3c00;
-  }
-  
-  .profile span {
+}
+
+.profile span {
     font-weight: bold;
     font-size: 18px;
-  }
-  
-  /* Räume */
-  #rooms {
+}
+
+#rooms {
     list-style: none;
     padding: 0;
-  }
-  
-  .room {
+}
+
+.room {
     padding: 10px 15px;
     margin-bottom: 5px;
     background: #2c2c2c;
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.3s;
-  }
-  
-  .room:hover,
-  .room.active {
+}
+
+.room:hover,
+.room.active {
     background: #ff3c00;
     color: white;
     font-weight: bold;
-  }
-  
-  /* Chat Area */
-  .chat-area {
+}
+
+.chat-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-   
+    height: 100vh;
     padding: 20px;
     background: #2c2c2c;
-  }
-  
-  #messages {
+}
+
+#messages {
     flex: 1;
     list-style: none;
     padding: 20px;
@@ -173,10 +212,9 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
-  }
-  
-  /* Eingabebereich */
-  .input-container {
+}
+
+.input-container {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -184,9 +222,9 @@
     background: #333;
     border-radius: 10px;
     margin-top: 10px;
-  }
-  
-  #input {
+}
+
+#input {
     flex: 1;
     padding: 15px;
     font-size: 16px;
@@ -194,14 +232,14 @@
     color: white;
     border: 1px solid #ff3c00;
     border-radius: 8px;
-  }
-  
-  #input:focus {
+}
+
+#input:focus {
     outline: none;
     border-color: #ff5e26;
-  }
-  
-  #sendBtn {
+}
+
+#sendBtn {
     background: #ff3c00;
     border: none;
     padding: 15px 20px;
@@ -209,40 +247,38 @@
     color: white;
     font-size: 16px;
     cursor: pointer;
-  }
-  
-  #sendBtn:hover {
+}
+
+#sendBtn:hover {
     background: #ff5e26;
-  }
-  
-  /* Nachrichten */
-  .message-line {
+}
+
+.message-line {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 10px;
-  }
-  
-  .message-pic {
+}
+
+.message-pic {
     width: 32px;
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-  }
-  
-  .message-name {
+}
+
+.message-name {
     font-weight: bold;
     color: #ff4500;
     font-size: 14px;
-  }
-  
-  .message-text {
+}
+
+.message-text {
     color: #fff;
     font-size: 14px;
-  }
-  
-  /* Bestätigungs-Popup */
-  .popup-confirm {
+}
+
+.popup-confirm {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -252,123 +288,77 @@
     box-shadow: 0px 0px 20px rgba(0,0,0,0.3);
     border-radius: 10px;
     z-index: 9999;
-  }
-  
-  .popup-inner {
+}
+
+.popup-inner {
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
-  
-  .popup-inner button {
+}
+
+.popup-inner button {
     margin-top: 10px;
     padding: 5px 15px;
     cursor: pointer;
-  }
-  
-  .sidebar {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 250px;
-    background-color: #1e1e1e;
-    position: relative;
-    will-change: left;
-    transition: left 0.2s ease-out;
-   
-    z-index: 1000;
-  }
-  
-  .sidebar-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-  }
-  
-  .sidebar-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #333;
-    background-color: #1e1e1e;
-  }
-  
-  .sidebar-footer button {
-    width: 100%;
-    background: #ff3c00;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .sidebar-footer button:hover {
-    background: #ff5e26;
-  }
-  
-  /* Mobile Anpassung */
-  @media (max-width: 768px) {
+}
+
+@media (max-width: 768px) {
     .menu-toggle {
-      display: block;
+        display: block;
     }
-  
+
     .sidebar {
-      position: fixed;
-      top: 0;
-      left: -250px;
-      height: 100%;
+        position: fixed;
+        top: 0;
+        left: -250px;
+        height: 100vh;
     }
-  
+
     .sidebar.open {
-      left: 0;
+        left: 0;
     }
-  }
-  
-  @media (max-width: 430px) {
-    .sidebar {
-      width: 200px;
+
+    .chat-layout,
+    .chat-area {
+        height: 100vh;
     }
-  }
-  
-  
-  @media (max-width: 600px) {
+}
+
+@media (max-width: 600px) {
     .input-container {
-      flex-direction: column;
-      gap: 5px;
+        flex-direction: column;
+        gap: 5px;
     }
-  
+
     #sendBtn {
-      width: 100%;
+        width: 100%;
     }
-  }
-  
-  @media (max-width: 430px) {
+}
+
+@media (max-width: 430px) {
     .sidebar {
-      width: 200px;
+        width: 200px;
     }
-  
+
     .sidebar li {
-      font-size: 12px;
-      padding: 6px 8px;
-      min-width: 70px;
+        font-size: 12px;
+        padding: 6px 8px;
+        min-width: 70px;
     }
-  
+
     .message-name,
     .message-text,
     #input {
-      font-size: 12px;
+        font-size: 12px;
     }
-  
+
     #sendBtn {
-      font-size: 14px;
-      padding: 10px;
+        font-size: 14px;
+        padding: 10px;
     }
-  
+
     .popup-confirm {
-      width: 90%;
-      padding: 15px;
+        width: 90%;
+        padding: 15px;
     }
-  }
-  
+}
