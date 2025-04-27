@@ -14,13 +14,29 @@ document.getElementById('profileName').textContent = currentUsername;
 const fileInput = document.getElementById('fileInput');
 const profilePic = document.getElementById('profilePic');
 
+// Profilbild laden wenn vorhanden 🔥
+const savedProfilePic = localStorage.getItem('profilePic');
+if (savedProfilePic) {
+  profilePic.src = savedProfilePic;
+}
+
+// Profilbild upload und speichern
 fileInput.addEventListener('change', (event) => {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = function(e) {
       profilePic.src = e.target.result;
-    };
+
+      // Profilbild im localStorage speichern 🔥
+      localStorage.setItem('profilePic', e.target.result);
+
+      // 📤 Bild an Server schicken
+      socket.emit('update profile picture', {
+        username: currentUsername,
+        profilePic: e.target.result
+      });
+    }
     reader.readAsDataURL(file);
   }
 });
@@ -35,7 +51,6 @@ roomsList.addEventListener('click', (event) => {
   if (!room) return;
 
   currentRoom = room;
-
   messagesList.innerHTML = '';
 
   socket.emit('join room', { username: currentUsername, room });
@@ -70,14 +85,12 @@ socket.on('chat message', (message) => {
   li.classList.add('message-item');
 
   li.innerHTML = `
-  <div class="message-line">
-    <img src="${message.profilePic || 'default-avatar.png'}" class="message-pic">
-    <span class="message-name">${message.username}:</span>
-    <span class="message-text">${message.text}</span>
-  </div>
-`;
-
-
+    <div class="message-line">
+      <img src="${message.profilePic || 'default-avatar.png'}" class="message-pic">
+      <span class="message-name">${message.username}:</span>
+      <span class="message-text">${message.text}</span>
+    </div>
+  `;
 
   messagesList.appendChild(li);
   messagesList.scrollTop = messagesList.scrollHeight;
