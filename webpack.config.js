@@ -5,7 +5,7 @@ module.exports = {
   entry: './server.js', // oder dein richtiger Pfad
   resolve: {
     fallback: {
-      "url": require.resolve("url/"),
+    
       "crypto": require.resolve("crypto-browserify"),
       "stream": require.resolve("stream-browserify"),
       "buffer": require.resolve("buffer/"),
