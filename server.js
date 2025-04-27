@@ -97,7 +97,8 @@ app.post('/register', async (req, res) => {
   app.get('/chat.html', authMiddleware, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'chat.html'));
   });
-
+  let onlineUsers = {};
+  const registeredUsers = []; 
 // Socket.IO
 io.on('connection', (socket) => {
   console.log(`✅ Benutzer verbunden: ${socket.id}`);
@@ -208,6 +209,30 @@ socket.on('update profile picture', ({ username, profilePic }) => {
     socket.emit('account deleted');
   });
   
+  socket.on('register user', (username) => {
+    if (!registeredUsers.includes(username)) {
+        registeredUsers.push(username);
+      }
+    socket.username = username;
+    onlineUsers[username] = { id: socket.id };
+  
+    io.emit('online users', Object.keys(onlineUsers));
+  });
+ 
+
+
+  socket.on('search users', (query) => {
+    const matchedUsers = registeredUsers.filter(user => user.toLowerCase().includes(query));
+    socket.emit('search results', matchedUsers);
+  });
+  
+  socket.on('disconnect', () => {
+    if (socket.username) {
+      delete onlineUsers[socket.username];
+      io.emit('online users', Object.keys(onlineUsers));
+    }
+    console.log(`❌ Benutzer getrennt: ${socket.id}`);
+  });
   
 });
 

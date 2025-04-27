@@ -5,8 +5,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login & Registrierung</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    #infoBox {
+  max-width: 90%;
+  background-color: #1e1e1e;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  margin: 20px auto;
+  position: relative;
+}
+
+
+    #authContainer {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .auth-box {
+      background-color: #1e1e1e;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      width: 300px;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      background-color: #2c2c2c;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #ff4500;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #e03e00;
+    }
+
+    hr {
+      margin: 20px 0;
+      border-color: #333;
+    }
+
+    p {
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    #footer {
+  width: 100%;
+  padding: 10px;
+  background-color: #1e1e1e;
+  text-align: center;
+  font-size: 13px;
+  color: #aaa;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+
+#footer a {
+  color: #ff4500;
+  text-decoration: none;
+  margin: 0 5px;
+}
+
+#footer a:hover {
+  text-decoration: underline;
+}
+
+  </style>
 </head>
 <body>
+  <div id="infoBox">
+    <h3>ℹ️ Informationen</h3>
+    <p>Dieses Chat-Tool ist <b>Open Source</b>.<br>Alle Nachrichten sind <b>Ende-zu-Ende verschlüsselt</b>.<br><b>Keine IP-Logs</b>, keine Speicherung von Metadaten.<br>Mehr Sicherheit als Telegram.<br>100% Privat.<br>Kostenlos für Alle</p>
+  </div>
+
   <div id="authContainer">
     <div class="auth-box">
       <h2>Login</h2>
@@ -71,10 +175,9 @@
       loginMessage.innerText = data.message;
 
       if (response.status === 200) {
-  localStorage.setItem('username', username);
-  window.location.href = '/chat.html';  // Weiterleitung zur Chat-Seite
-}
-
+        localStorage.setItem('username', username);
+        window.location.href = '/chat.html';  // Weiterleitung zur Chat-Seite
+      }
     });
 
     registerForm.addEventListener('submit', async (event) => {
@@ -98,5 +201,9 @@
       }
     });
   </script>
+  <footer id="footer">
+    <p>© 2025 OpenChat | <a href="/agb.html">AGB</a> | <a href="/datenschutz.html">Datenschutz</a> | <a href="/impressum.html">Impressum</a></p>
+  </footer>
+  
 </body>
 </html>
