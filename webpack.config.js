@@ -8,5 +8,6 @@ module.exports = {
     },
     compress: true,
     port: 3000,
+    mode: 'none',
   },
 };
