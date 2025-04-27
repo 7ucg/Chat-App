@@ -5,7 +5,12 @@ const inputField = document.getElementById('input');
 const form = document.getElementById('form');
 const userSearchInput = document.getElementById('userSearchInput');
 userSearchInput.addEventListener('input', renderFriendsList);
-
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    if (confirm('Willst du dich wirklich ausloggen?')) {
+      localStorage.clear();
+      window.location.href = '/';
+    }
+  });
 let onlineUsers = [];
 
 socket.on('online users', (users) => {
