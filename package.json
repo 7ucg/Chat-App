@@ -15,5 +15,8 @@
     "express-session": "^1.18.1",
     "ngrok": "^5.0.0-beta.2",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "webpack-cli": "^6.0.1"
   }
 }
