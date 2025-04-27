@@ -11,62 +11,70 @@
 </head>
 <body>
 
-<div class="chat-layout">
-  <div class="sidebar">
-    <div class="profile" id="profile">
-      <img id="profilePic" src="default-avatar.png" alt="Profilbild">
-      <span id="profileName">Unbekannt</span>
-    </div>
-    <input type="file" id="fileInput" style="display:none;">
-    <ul id="rooms">
-      <li class="room" data-room="Friends" id="friendsButton">Friends</li>
-      <div id="friendsSection" style="display: none; padding-left: 20px;">
-        <input type="text" id="userSearchInput" placeholder="Username suchen..." style="margin:10px 0; width: 90%;">
-        <ul id="friendsList" style="list-style: none; padding: 0;"></ul>
+  <button id="menuToggle" class="menu-toggle">☰</button> <!-- Button direkt nach <body> -->
+  
+  <div class="chat-layout">
+    <div class="sidebar">
+      <div class="profile" id="profile">
+        <img id="profilePic" src="default-avatar.png" alt="Profilbild">
+        <span id="profileName">Unbekannt</span>
       </div>
-      <li class="room" data-room="Allgemein">Allgemein</li>
-      <li class="room" data-room="Programmierung">Programmierung</li>
-      <li class="room" data-room="Instagram Chat">Instagram Chat</li>
-      <li class="room" data-room="Telegram Chat">Telegram Chat</li>
-      <li class="room" data-room="Tiktok Chat">Tiktok Chat</li>
-      <li class="room" data-room="Whatsapp Chat">Whatsapp Chat</li>
+  
+      <input type="file" id="fileInput" style="display:none;">
+  
+      <ul id="rooms">
+        <li class="room" data-room="Friends" id="friendsButton">Friends</li>
+        <div id="friendsSection" style="display: none; padding-left: 20px;">
+          <input type="text" id="userSearchInput" placeholder="Username suchen..." style="margin:10px 0; width: 90%;">
+          <ul id="friendsList" style="list-style: none; padding: 0;"></ul>
+        </div>
+        <li class="room" data-room="Allgemein">Allgemein</li>
+        <li class="room" data-room="Programmierung">Programmierung</li>
+        <li class="room" data-room="Instagram Chat">Instagram Chat</li>
+        <li class="room" data-room="Telegram Chat">Telegram Chat</li>
+        <li class="room" data-room="Tiktok Chat">Tiktok Chat</li>
+        <li class="room" data-room="Whatsapp Chat">Whatsapp Chat</li>
+      </ul>
+  
+      <div id="privateRoomsSection">
+        <h3>Private Rooms:</h3>
+        <ul id="privateRoomsList"></ul>
+      </div>
+  
+      <div style="position: absolute; bottom: 80px; left: 20px;">
+        <button id="logoutBtn">🚪 Logout</button>
+      </div>
+  
+      <div style="position: absolute; bottom: 20px; left: 20px;">
+        <button id="deleteAccountBtn">❌ Account löschen</button>
+      </div>
       
-    </ul>
- 
-    <div style="position: absolute; bottom: 80px; left: 20px;">
-      <button id="logoutBtn" style="padding: 8px 12px; background-color: #555; color: white; border: none; border-radius: 5px;">
-        🚪 Logout
-      </button>
     </div>
-    <div style="position: absolute; bottom: 20px; left: 20px;">
-      <button id="deleteAccountBtn" style="padding: 8px 12px; background-color: red; color: white; border: none; border-radius: 5px;">
-        ❌ Account löschen
-      </button>
+  
+    <div class="chat-area">
+      <ul id="messages"></ul>
+      <form id="form" class="input-container">
+        <input id="input" autocomplete="off" placeholder="Schreibe etwas...">
+        <button id="sendBtn" type="submit">Senden</button>
+      </form>
     </div>
-    
-    <div id="privateRoomsSection">
-      <h3>Private Rooms:</h3>
-      <ul id="privateRoomsList"></ul>
-    </div>
-    
   </div>
-
-  <div class="chat-area">
-    <ul id="messages"></ul>
-    <form id="form" class="input-container">
-      <input id="input" autocomplete="off" placeholder="Schreibe etwas...">
-      <button id="sendBtn" type="submit">Senden</button>
-    </form>
-  </div>
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-<script src="client.js"></script>
-<script>
-  if (!localStorage.getItem('username')) {
-    window.location.href = '/';
-  }
-</script>
-
-</body>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="client.js"></script>
+  <script>
+    if (!localStorage.getItem('username')) {
+      window.location.href = '/';
+    }
+  
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+  
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+  </script>
+  
+  </body>
+  
 </html>

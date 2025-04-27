@@ -181,25 +181,33 @@
     });
 
     registerForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
+  event.preventDefault();
 
-      const username = document.getElementById('registerUsername').value;
-      const password = document.getElementById('registerPassword').value;
+  const username = document.getElementById('registerUsername').value.trim();
+  const password = document.getElementById('registerPassword').value;
 
-      const response = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
+  const usernameRegex = /^[a-zA-Z0-9]{3,12}$/;
 
-      const data = await response.json();
-      registerMessage.innerText = data.message;
+  if (!usernameRegex.test(username)) {
+    registerMessage.innerText = "❌ Benutzername muss 3-12 Zeichen lang sein und darf nur Buchstaben und Zahlen enthalten.";
+    return;
+  }
 
-      if (response.status === 200) {
-        document.querySelector('.auth-box').style.display = 'block';
-        registerBox.style.display = 'none';
-      }
-    });
+  const response = await fetch('/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+
+  const data = await response.json();
+  registerMessage.innerText = data.message;
+
+  if (response.status === 200) {
+    document.querySelector('.auth-box').style.display = 'block';
+    registerBox.style.display = 'none';
+  }
+});
+
   </script>
   <footer id="footer">
     <p>© 2025 OpenChat | <a href="/agb.html">AGB</a> | <a href="/datenschutz.html">Datenschutz</a> | <a href="/impressum.html">Impressum</a></p>

@@ -11,6 +11,12 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
       window.location.href = '/';
     }
   });
+  const menuToggle = document.getElementById('menuToggle');
+  const sidebar = document.querySelector('.sidebar');
+
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+  });
 let onlineUsers = [];
 
 socket.on('online users', (users) => {
@@ -59,25 +65,61 @@ if (savedProfilePic) {
 }
 
 // Profilbild upload und speichern
+// fileInput.addEventListener('change', (event) => {
+//   const file = event.target.files[0];
+//   if (file) {
+//     const reader = new FileReader();
+//     reader.onload = function(e) {
+//       profilePic.src = e.target.result;
+
+//       // Profilbild im localStorage speichern 🔥
+//       localStorage.setItem('profilePic', e.target.result);
+
+//       // 📤 Bild an Server schicken
+//       socket.emit('update profile picture', {
+//         username: currentUsername,
+//         profilePic: e.target.result
+//       });
+//     }
+//     reader.readAsDataURL(file);
+//   }
+// });
 fileInput.addEventListener('change', (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      profilePic.src = e.target.result;
-
-      // Profilbild im localStorage speichern 🔥
-      localStorage.setItem('profilePic', e.target.result);
-
-      // 📤 Bild an Server schicken
-      socket.emit('update profile picture', {
-        username: currentUsername,
-        profilePic: e.target.result
-      });
+    const file = event.target.files[0];
+    if (file) {
+      // Dateityp prüfen
+      const allowedTypes = ['image/png', 'image/jpeg'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Nur PNG und JPG Dateien sind erlaubt!');
+        fileInput.value = ''; // Datei wieder entfernen
+        return;
+      }
+  
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          if (img.width > 1000 || img.height > 1000) {
+            alert('Das Bild ist zu groß! Maximal 1000x1000 Pixel.');
+            fileInput.value = ''; // Datei wieder entfernen
+            return;
+          }
+  
+          profilePic.src = e.target.result;
+          localStorage.setItem('profilePic', e.target.result);
+  
+          // 📤 Bild an Server schicken
+          socket.emit('update profile picture', {
+            username: currentUsername,
+            profilePic: e.target.result
+          });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
-    reader.readAsDataURL(file);
-  }
-});
+  });
+  
 
 document.getElementById('profile').addEventListener('click', () => {
   fileInput.click();
