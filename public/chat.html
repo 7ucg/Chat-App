@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Mein Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="chat-layout">
+  <div class="sidebar">
+    <div class="profile" id="profile">
+      <img id="profilePic" src="default-avatar.png" alt="Profilbild">
+      <span id="profileName">Unbekannt</span>
+    </div>
+    <input type="file" id="fileInput" style="display:none;">
+    <ul id="rooms">
+      <li class="room" data-room="Allgemein">Allgemein</li>
+      <li class="room" data-room="Gaming">Gaming</li>
+      <li class="room" data-room="Programmierung">Programmierung</li>
+    </ul>
+  </div>
+
+  <div class="chat-area">
+    <ul id="messages"></ul>
+    <form id="form" class="input-container">
+      <input id="input" autocomplete="off" placeholder="Schreibe etwas...">
+      <button id="sendBtn" type="submit">Senden</button>
+    </form>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="client.js"></script>
+</body>
+</html>
