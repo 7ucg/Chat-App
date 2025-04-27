@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login & Registrierung</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="authContainer">
+    <div class="auth-box">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Benutzername" required>
+        <input type="password" id="loginPassword" placeholder="Passwort" required>
+        <button type="submit">Einloggen</button>
+      </form>
+      <p id="loginMessage"></p>
+      <hr>
+      <button id="toRegister">Noch keinen Account? Registrieren</button>
+    </div>
+
+    <div class="auth-box" id="registerBox" style="display: none;">
+      <h2>Registrierung</h2>
+      <form id="registerForm">
+        <input type="text" id="registerUsername" placeholder="Benutzername" required>
+        <input type="password" id="registerPassword" placeholder="Passwort" required>
+        <button type="submit">Registrieren</button>
+      </form>
+      <p id="registerMessage"></p>
+      <hr>
+      <button id="toLogin">Bereits ein Account? Login</button>
+    </div>
+  </div>
+
+  <script>
+    const toRegisterButton = document.getElementById('toRegister');
+    const toLoginButton = document.getElementById('toLogin');
+    const registerBox = document.getElementById('registerBox');
+    const authContainer = document.getElementById('authContainer');
+
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+
+    const loginMessage = document.getElementById('loginMessage');
+    const registerMessage = document.getElementById('registerMessage');
+
+    toRegisterButton.addEventListener('click', () => {
+      document.querySelector('.auth-box').style.display = 'none';
+      registerBox.style.display = 'block';
+    });
+
+    toLoginButton.addEventListener('click', () => {
+      document.querySelector('.auth-box').style.display = 'block';
+      registerBox.style.display = 'none';
+    });
+
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+      loginMessage.innerText = data.message;
+
+      if (response.status === 200) {
+  localStorage.setItem('username', username);
+  window.location.href = '/chat.html';  // Weiterleitung zur Chat-Seite
+}
+
+    });
+
+    registerForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const username = document.getElementById('registerUsername').value;
+      const password = document.getElementById('registerPassword').value;
+
+      const response = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+      registerMessage.innerText = data.message;
+
+      if (response.status === 200) {
+        document.querySelector('.auth-box').style.display = 'block';
+        registerBox.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
