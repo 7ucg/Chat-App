@@ -37,7 +37,6 @@ if (fs.existsSync(usersPath)) {
 // Registrierung
 app.post('/register', async (req, res) => {
     const { username, password, profilePic } = req.body;
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const registeredAt = new Date().toISOString();
   
     if (!username || !password) {
@@ -50,7 +49,7 @@ app.post('/register', async (req, res) => {
   
     const hashedPassword = await bcrypt.hash(password, 10); // Passwort verschlüsseln
   
-    users[username] = { password: hashedPassword, profilePic: profilePic || '', ip, registeredAt };
+    users[username] = { password: hashedPassword, profilePic: profilePic || '', registeredAt };
     
     fs.writeFile(usersPath, JSON.stringify(users, null, 2), (err) => {
       if (err) console.error('Fehler beim Speichern der Benutzer:', err);
@@ -77,7 +76,13 @@ app.post('/register', async (req, res) => {
   
     req.session.username = username;  // Save session!
   
-    res.status(200).json({ message: 'Erfolgreich eingeloggt!', username });
+    // res.status(200).json({ message: 'Erfolgreich eingeloggt!', username });
+    res.status(200).json({ 
+        message: 'Erfolgreich eingeloggt!', 
+        username,
+        profilePic: user.profilePic // direkt mitschicken!
+      });
+      
   });
   
   // Middleware für Schutz
@@ -97,25 +102,47 @@ app.post('/register', async (req, res) => {
 io.on('connection', (socket) => {
   console.log(`✅ Benutzer verbunden: ${socket.id}`);
 
-  socket.on('join room', ({ username, room }) => {
+//   socket.on('join room', ({ username, room }) => {
+//     socket.username = username;
+//     socket.room = room;
+//     socket.join(room);
+//     console.log(`📢 ${username} hat Raum "${room}" betreten.`);
+
+//     if (savedMessages[room]) {
+//       savedMessages[room].forEach((msg) => {
+//         socket.emit('chat message', msg);
+//       });
+//     }
+
+//     socket.to(room).emit('chat message', {
+//       username: 'System',
+//       text: `${username} ist dem Raum beigetreten.`,
+//       profilePic: 'default-avatar.png',
+//     });
+//   });
+socket.on('join room', ({ username, room }) => {
     socket.username = username;
     socket.room = room;
     socket.join(room);
     console.log(`📢 ${username} hat Raum "${room}" betreten.`);
-
-    if (savedMessages[room]) {
-      savedMessages[room].forEach((msg) => {
-        socket.emit('chat message', msg);
-      });
-    }
-
+  
+   if (savedMessages[room]) {
+     savedMessages[room].forEach((msg) => {
+      socket.emit('chat message', msg);
+    });
+   }
+  
+   if (savedMessages[room]) {
+     socket.emit('chat history', savedMessages[room]);
+   }
+  
     socket.to(room).emit('chat message', {
       username: 'System',
       text: `${username} ist dem Raum beigetreten.`,
       profilePic: 'default-avatar.png',
     });
   });
-
+  
   socket.on('chat message', (data) => {
     const message = {
       username: data.username,
@@ -128,7 +155,8 @@ io.on('connection', (socket) => {
     if (!savedMessages[socket.room]) savedMessages[socket.room] = [];
     savedMessages[socket.room].push(message);
   });
-
+ 
+  
   socket.on('disconnect', () => {
     if (socket.username && socket.room) {
       socket.to(socket.room).emit('chat message', {
@@ -150,6 +178,36 @@ socket.on('update profile picture', ({ username, profilePic }) => {
       });
     }
   });
+  socket.on('delete account', ({ username }) => {
+    console.log(`🗑️ Lösche Account von ${username}`);
+  
+    // Benutzer löschen
+    if (users[username]) {
+      delete users[username];
+      fs.writeFile(usersPath, JSON.stringify(users, null, 2), (err) => {
+        if (err) console.error('Fehler beim Löschen des Benutzers:', err);
+        else console.log(`✅ Benutzer ${username} gelöscht.`);
+      });
+    }
+  
+    // Nachrichten löschen
+    for (const room in savedMessages) {
+      savedMessages[room] = savedMessages[room].filter((msg) => msg.username !== username);
+    }
+    fs.writeFile(messagesPath, JSON.stringify(savedMessages, null, 2), (err) => {
+      if (err) console.error('Fehler beim Löschen der Nachrichten:', err);
+      else console.log(`✅ Nachrichten von ${username} gelöscht.`);
+    });
+  
+    // Reload für alle im Raum
+    if (socket.room) {
+      io.to(socket.room).emit('reload messages');
+    }
+  
+    // User rauswerfen
+    socket.emit('account deleted');
+  });
+  
   
 });
 

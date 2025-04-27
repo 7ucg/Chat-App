@@ -99,3 +99,40 @@ socket.on('chat message', (message) => {
     li.classList.add('fade-in');
   }, 10);
 });
+
+// Chatverlauf erhalten
+socket.on('chat history', (messages) => {
+    messagesList.innerHTML = ''; // Leeren
+    messages.forEach((message) => {
+      const li = document.createElement('li');
+      li.classList.add('message-item');
+      li.innerHTML = `
+        <div class="message-line">
+          <img src="${message.profilePic || 'default-avatar.png'}" class="message-pic">
+          <span class="message-name">${message.username}:</span>
+          <span class="message-text">${message.text}</span>
+        </div>
+      `;
+      messagesList.appendChild(li);
+    });
+  
+    messagesList.scrollTop = messagesList.scrollHeight;
+  });
+  document.getElementById('deleteAccountBtn').addEventListener('click', () => {
+    if (confirm('Willst du wirklich deinen Account und alle deine Nachrichten löschen? Diese Aktion ist unwiderruflich!')) {
+      socket.emit('delete account', { username: currentUsername });
+    }
+  });
+  socket.on('account deleted', () => {
+    alert('Dein Account wurde gelöscht. Du wirst ausgeloggt.');
+    localStorage.clear(); // Alles vom User löschen (username, profilbild)
+    window.location.href = '/'; // Zurück zur Startseite
+  });
+  socket.on('reload messages', () => {
+    if (currentRoom) {
+      // Raum neu joinen, um Messages neu zu laden
+      messagesList.innerHTML = '';
+      socket.emit('join room', { username: currentUsername, room: currentRoom });
+    }
+  });
+  
