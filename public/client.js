@@ -112,25 +112,50 @@ roomsList.addEventListener('click', (event) => {
   
   
 // Nachricht senden
+// form.addEventListener('submit', (e) => {
+//   e.preventDefault();
+//   if (!currentRoom) {
+//     alert('Bitte zuerst einen Raum betreten.');
+//     return;
+//   }
+
+//   const messageText = inputField.value.trim();
+//   if (messageText) {
+//     socket.emit('chat message', {
+//       username: currentUsername,
+//       text: messageText,
+//       profilePic: profilePic.src
+//     });
+//     inputField.value = '';
+//     inputField.focus();
+//   }
+// });
 form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  if (!currentRoom) {
-    alert('Bitte zuerst einen Raum betreten.');
-    return;
-  }
-
-  const messageText = inputField.value.trim();
-  if (messageText) {
-    socket.emit('chat message', {
-      username: currentUsername,
-      text: messageText,
-      profilePic: profilePic.src
-    });
-    inputField.value = '';
-    inputField.focus();
-  }
-});
-
+    e.preventDefault();
+    if (!currentRoom) {
+      alert('Bitte zuerst einen Raum betreten.');
+      return;
+    }
+  
+    let messageText = inputField.value.trim();
+    
+    // 🔥 Hier Begrenzung einbauen
+    const maxLength = 500;
+    if (messageText.length > maxLength) {
+      messageText = messageText.substring(0, maxLength); // Zu lange Nachricht kürzen
+    }
+  
+    if (messageText) {
+      socket.emit('chat message', {
+        username: currentUsername,
+        text: messageText,
+        profilePic: profilePic.src
+      });
+      inputField.value = '';
+      inputField.focus();
+    }
+  });
+  
 // Nachricht empfangen
 // socket.on('chat message', (message) => {
 //   const li = document.createElement('li');
@@ -192,24 +217,38 @@ socket.on('chat message', (message) => {
   
   
   
-// Chatverlauf erhalten
-socket.on('chat history', (messages) => {
+  socket.on('chat history', (messages) => {
     messagesList.innerHTML = ''; // Leeren
     messages.forEach((message) => {
       const li = document.createElement('li');
       li.classList.add('message-item');
-      li.innerHTML = `
-        <div class="message-line">
-          <img src="${message.profilePic || 'default-avatar.png'}" class="message-pic">
-          <span class="message-name">${message.username}:</span>
-          <span class="message-text">${message.text}</span>
-        </div>
-      `;
+  
+      const messageLine = document.createElement('div');
+      messageLine.classList.add('message-line');
+  
+      const img = document.createElement('img');
+      img.src = message.profilePic || 'default-avatar.png';
+      img.classList.add('message-pic');
+  
+      const usernameSpan = document.createElement('span');
+      usernameSpan.classList.add('message-name');
+      usernameSpan.textContent = `${message.username}:`; // Sicherer Text
+  
+      const textSpan = document.createElement('span');
+      textSpan.classList.add('message-text');
+      textSpan.textContent = message.text; // Sicherer Text
+  
+      messageLine.appendChild(img);
+      messageLine.appendChild(usernameSpan);
+      messageLine.appendChild(textSpan);
+      li.appendChild(messageLine);
+  
       messagesList.appendChild(li);
     });
   
     messagesList.scrollTop = messagesList.scrollHeight;
   });
+  
   document.getElementById('deleteAccountBtn').addEventListener('click', () => {
     if (confirm('Willst du wirklich deinen Account und alle deine Nachrichten löschen? Diese Aktion ist unwiderruflich!')) {
       socket.emit('delete account', { username: currentUsername });
