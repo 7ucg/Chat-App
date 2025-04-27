@@ -1,5 +1,6 @@
+/* Toggle-Button für Mobile */
 .menu-toggle {
-    display: none; /* Standard Desktop: unsichtbar */
+    display: none; /* Desktop: ausblenden */
     position: absolute;
     top: 15px;
     left: 15px;
@@ -10,76 +11,19 @@
     padding: 8px 12px;
     border-radius: 8px;
     cursor: pointer;
-    z-index: 1100; /* <-- HÖHER als Sidebar! */
+    z-index: 1100; /* Über Sidebar */
   }
   
-  
-  @media (max-width: 768px) {
-    .menu-toggle {
-      display: block; /* Auf Mobile: sichtbar */
-    }
-  
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: -250px; /* Anfang: versteckt */
-        width: 250px;
-        height: 100%;
-        background-color: #222;
-        overflow-y: auto; /* <-- scrollen erlauben */
-        transition: left 0.3s ease;
-        z-index: 1000;
-      }
-      
-      /* Wenn Sidebar offen */
-      .sidebar.open {
-        left: 0;
-      }
-      
-  
-    .chat-area {
-      padding: 20px;
-      margin-top: 50px;
-    }
-  }
-  
-  /* Extra kleine Geräte */
-  @media (max-width: 430px) {
-    .sidebar li {
-      font-size: 12px;
-      padding: 6px 8px;
-      min-width: 70px;
-    }
-  
-    .message-name,
-    .message-text {
-      font-size: 12px;
-    }
-  
-    #input {
-      font-size: 12px;
-      padding: 10px;
-    }
-  
-    #sendBtn {
-      font-size: 14px;
-      padding: 10px;
-    }
-  
-    .popup-confirm {
-      width: 90%;
-      padding: 15px;
-    }
-  }
-  
-body {
+  /* Basis */
+  body {
     margin: 0;
     font-family: Arial, sans-serif;
     background-color: #121212;
     color: #fff;
+    overflow: hidden; /* Verhindert ungewolltes Scrollen */
   }
   
-  /* Auth Container */
+  /* Auth-Seiten */
   .auth-container {
     display: flex;
     justify-content: center;
@@ -91,7 +35,6 @@ body {
   #login-form, #register-form {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
   }
   
@@ -135,13 +78,7 @@ body {
     margin-left: 0;
     height: 100vh;
   }
-  
-  .sidebar {
-    width: 250px;
-    background-color: #1e1e1e;
-    overflow-y: auto; 
-    padding: 20px;
-  }
+
   
   .sidebar h3 {
     margin-top: 0;
@@ -162,21 +99,66 @@ body {
     transition: background 0.3s;
   }
   
-  .sidebar li:hover {
-    background: #ff3c00;
-  }
-  
+  .sidebar li:hover,
   .sidebar li.active {
     background: #ff3c00;
     color: white;
     font-weight: bold;
   }
   
+  /* Profil oben */
+  .profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .profile img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #333;
+    border: 2px solid #ff3c00;
+  }
+  
+  .profile span {
+    font-weight: bold;
+    font-size: 18px;
+  }
+  
+  /* Räume */
+  #rooms {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .room {
+    padding: 10px 15px;
+    margin-bottom: 5px;
+    background: #2c2c2c;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .room:hover,
+  .room.active {
+    background: #ff3c00;
+    color: white;
+    font-weight: bold;
+  }
+  
+  /* Chat Area */
   .chat-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: space-between;
+    overflow: hidden;
     padding: 20px;
     background: #2c2c2c;
   }
@@ -187,10 +169,13 @@ body {
     padding: 20px;
     background: #1a1a1a;
     border-radius: 5px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
   
+  /* Eingabebereich */
   .input-container {
     display: flex;
     gap: 10px;
@@ -230,68 +215,7 @@ body {
     background: #ff5e26;
   }
   
-  /* Mobile Anpassung */
-  @media (max-width: 600px) {
-    .input-container {
-      flex-direction: column;
-      gap: 5px;
-    }
-  
-    #sendBtn {
-      width: 100%;
-    }
-  }
-  
-  
-  /* Profil oben links */
-  .profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding: 10px;
-    cursor: pointer; /* damit klar ist: klickbar */
-  }
-  
-  .profile img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    background-color: #333;
-    border: 2px solid #ff3c00;
-  }
-  
-  .profile span {
-    font-weight: bold;
-    font-size: 18px;
-  }
-  
-  /* Chatrooms Buttons */
-  #rooms {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .room {
-    padding: 10px 15px;
-    margin-bottom: 5px;
-    background: #2c2c2c;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .room:hover {
-    background: #ff3c00;
-    color: white;
-  }
-  
-  .room.active {
-    background: #ff3c00;
-    color: white;
-    font-weight: bold;
-  }
+  /* Nachrichten */
   .message-line {
     display: flex;
     align-items: center;
@@ -316,7 +240,8 @@ body {
     color: #fff;
     font-size: 14px;
   }
-
+  
+  /* Bestätigungs-Popup */
   .popup-confirm {
     position: fixed;
     top: 50%;
@@ -328,13 +253,122 @@ body {
     border-radius: 10px;
     z-index: 9999;
   }
+  
   .popup-inner {
     display: flex;
     flex-direction: column;
     align-items: center;
   }
+  
   .popup-inner button {
     margin-top: 10px;
     padding: 5px 15px;
     cursor: pointer;
   }
+  
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 250px;
+    background-color: #1e1e1e;
+    position: relative;
+    will-change: left;
+    transition: left 0.2s ease-out;
+    overflow: hidden; /* neu: keine doppelte Scrollbar */
+    z-index: 1000;
+  }
+  
+  .sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  .sidebar-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #333;
+    background-color: #1e1e1e;
+  }
+  
+  .sidebar-footer button {
+    width: 100%;
+    background: #ff3c00;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .sidebar-footer button:hover {
+    background: #ff5e26;
+  }
+  
+  /* Mobile Anpassung */
+  @media (max-width: 768px) {
+    .menu-toggle {
+      display: block;
+    }
+  
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      height: 100%;
+    }
+  
+    .sidebar.open {
+      left: 0;
+    }
+  }
+  
+  @media (max-width: 430px) {
+    .sidebar {
+      width: 200px;
+    }
+  }
+  
+  
+  @media (max-width: 600px) {
+    .input-container {
+      flex-direction: column;
+      gap: 5px;
+    }
+  
+    #sendBtn {
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 430px) {
+    .sidebar {
+      width: 200px;
+    }
+  
+    .sidebar li {
+      font-size: 12px;
+      padding: 6px 8px;
+      min-width: 70px;
+    }
+  
+    .message-name,
+    .message-text,
+    #input {
+      font-size: 12px;
+    }
+  
+    #sendBtn {
+      font-size: 14px;
+      padding: 10px;
+    }
+  
+    .popup-confirm {
+      width: 90%;
+      padding: 15px;
+    }
+  }
+  
