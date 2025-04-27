@@ -222,8 +222,8 @@ setInterval(() => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, async () => {
   console.log(`🚀 Server läuft auf http://localhost:${PORT}`);
-  const url =  await ngrok.connect({
-    addr: PORT,
-  });
-  console.log(`🌍 Öffentlich erreichbar unter: ${url}`);
+//   const url =  await ngrok.connect({
+//     addr: PORT,
+//   });
+//   console.log(`🌍 Öffentlich erreichbar unter: ${url}`);
 });
