@@ -24,9 +24,11 @@ socket.on('online users', (users) => {
 });
 
 
-let currentUsername = localStorage.getItem('username') || "Unbekannt";
+let currentUsername = localStorage.getItem('username');
 let currentRoom = null;
-
+if (!localStorage.getItem("username")) {
+    window.location.href = "/";
+  }
 socket.emit('register user', currentUsername); // <-- JETZT hier, erst wenn currentUsername existiert
 // Jedes Mal, wenn im Suchfeld getippt wird:
 userSearchInput.addEventListener('input', (e) => {
@@ -125,6 +127,7 @@ document.getElementById('profile').addEventListener('click', () => {
   fileInput.click();
 });
 
+  
 // Raum betreten
 // roomsList.addEventListener('click', (event) => {
 //   const room = event.target.getAttribute('data-room');
