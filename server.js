@@ -3,174 +3,146 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
-const ngrok = require('ngrok');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Pfade
-const messagesPath = path.join(__dirname, 'messages.json');
+// 📁 Sicherstellen, dass "Databank" existiert
+const databankDir = path.join(__dirname, 'Databank');
+if (!fs.existsSync(databankDir)) fs.mkdirSync(databankDir);
+
 const usersPath = path.join(__dirname, 'users.json');
 
-// Middleware
-app.use(express.json());
-app.use(session({
-    secret: 'lol', // Geheimen Schlüssel benutzen
-    resave: false,
-    saveUninitialized: false
-  }));
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Daten laden
-let savedMessages = {};
-if (fs.existsSync(messagesPath)) {
-  savedMessages = JSON.parse(fs.readFileSync(messagesPath));
-}
-
+// JSON-Dateien laden
 let users = {};
 if (fs.existsSync(usersPath)) {
   users = JSON.parse(fs.readFileSync(usersPath));
 }
 
+// Hilfsfunktion für Pfad zu Raumdatei
+function getRoomFilePath(room) {
+  const safeRoom = room.replace(/[^a-z0-9_\-]/gi, '_');
+  return path.join(databankDir, `${safeRoom}.json`);
+}
+
+app.use(express.json());
+app.use(session({
+    secret: 'lol',
+    resave: false,
+    saveUninitialized: false
+}));
+app.use(express.static(path.join(__dirname, 'Website')));
+
 // Registrierung
 app.post('/register', async (req, res) => {
     const { username, password, profilePic } = req.body;
     const registeredAt = new Date().toISOString();
-  
+
     if (!username || !password) {
       return res.status(400).json({ message: 'Benutzername und Passwort sind erforderlich!' });
     }
-  
+
     if (users[username]) {
       return res.status(400).json({ message: 'Benutzername bereits vergeben!' });
     }
-  
-    const hashedPassword = await bcrypt.hash(password, 10); // Passwort verschlüsseln
-  
-    users[username] = { password: hashedPassword, profilePic: profilePic || '', registeredAt };
-    
-    fs.writeFile(usersPath, JSON.stringify(users, null, 2), (err) => {
-      if (err) console.error('Fehler beim Speichern der Benutzer:', err);
-    });
-  
-    res.status(200).json({ message: 'Erfolgreich registriert!' });
-  });
-  
 
-  app.use(session({
-    secret: 'lol',
-    resave: false,
-    saveUninitialized: false
-  }));
-  
-  // Login speichern
-  app.post('/login', (req, res) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    users[username] = { password: hashedPassword, profilePic: profilePic || '', registeredAt };
+    fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+    res.status(200).json({ message: 'Erfolgreich registriert!' });
+});
+
+// Login
+app.post('/login', (req, res) => {
     const { username, password } = req.body;
-  
     const user = users[username];
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(400).json({ message: 'Falscher Benutzername oder Passwort!' });
     }
-  
-    req.session.username = username;  // Save session!
-  
-    // res.status(200).json({ message: 'Erfolgreich eingeloggt!', username });
-    res.status(200).json({ 
-        message: 'Erfolgreich eingeloggt!', 
-        username,
-        profilePic: user.profilePic // direkt mitschicken!
-      });
-      
-  });
-  
-  // Middleware für Schutz
-  function authMiddleware(req, res, next) {
-    if (!req.session.username) {
-      return res.redirect('/');
-    }
-    next();
-  }
-  
-  // Chat nur für eingeloggte User
-  app.get('/chat.html', authMiddleware, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'chat.html'));
-  });
-  let onlineUsers = {};
-  const registeredUsers = []; 
-// Socket.IO
+
+    req.session.username = username;
+    res.status(200).json({ message: 'Erfolgreich eingeloggt!', username, profilePic: user.profilePic });
+});
+
+// Nur eingeloggte dürfen den Chat sehen
+function authMiddleware(req, res, next) {
+  if (!req.session.username) return res.redirect('/');
+  next();
+}
+
+app.get('/chat.html', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'chat.html'));
+});
+
+let onlineUsers = {};
+const registeredUsers = [];
+
 io.on('connection', (socket) => {
-  console.log(`✅ Benutzer verbunden: ${socket.id}`);
+  console.log(`✅ Verbunden: ${socket.id}`);
 
-//   socket.on('join room', ({ username, room }) => {
-//     socket.username = username;
-//     socket.room = room;
-//     socket.join(room);
-//     console.log(`📢 ${username} hat Raum "${room}" betreten.`);
+  socket.on('register user', (username) => {
+    if (!registeredUsers.includes(username)) registeredUsers.push(username);
+    socket.username = username;
+    onlineUsers[username] = { id: socket.id };
+    io.emit('online users', Object.keys(onlineUsers));
+  });
 
-//     if (savedMessages[room]) {
-//       savedMessages[room].forEach((msg) => {
-//         socket.emit('chat message', msg);
-//       });
-//     }
-
-//     socket.to(room).emit('chat message', {
-//       username: 'System',
-//       text: `${username} ist dem Raum beigetreten.`,
-//       profilePic: 'default-avatar.png',
-//     });
-//   });
-socket.on('join room', ({ username, room }) => {
+  socket.on('join room', ({ username, room }) => {
     socket.username = username;
     socket.room = room;
     socket.join(room);
-    console.log(`📢 ${username} hat Raum "${room}" betreten.`);
-  
-   if (savedMessages[room]) {
-     savedMessages[room].forEach((msg) => {
-      socket.emit('chat message', msg);
-    });
-   }
-  
-   if (savedMessages[room]) {
-     socket.emit('chat history', savedMessages[room]);
-   }
-  
+    console.log(`📢 ${username} betritt Raum "${room}"`);
+
+    const roomFile = getRoomFilePath(room);
+    let roomMessages = [];
+
+    if (fs.existsSync(roomFile)) {
+      try {
+        roomMessages = JSON.parse(fs.readFileSync(roomFile));
+      } catch (err) {
+        console.error('❌ Fehler beim Laden:', err);
+      }
+    }
+
+    socket.emit('chat history', roomMessages);
+
     socket.to(room).emit('chat message', {
       username: 'System',
       text: `${username} ist dem Raum beigetreten.`,
-      profilePic: 'default-avatar.png',
+      profilePic: 'default-avatar.png'
     });
   });
-  
+
   socket.on('chat message', (data) => {
     const message = {
       username: data.username,
       text: data.text,
       profilePic: data.profilePic || 'default-avatar.png',
+      media: data.media || null
     };
 
     io.to(socket.room).emit('chat message', message);
 
-    if (!savedMessages[socket.room]) savedMessages[socket.room] = [];
-    savedMessages[socket.room].push(message);
-  });
- 
-  
-  socket.on('disconnect', () => {
-    if (socket.username && socket.room) {
-      socket.to(socket.room).emit('chat message', {
-        username: 'System',
-        text: `${socket.username} hat den Raum verlassen.`,
-        profilePic: 'default-avatar.png',
-      });
+    const roomFile = getRoomFilePath(socket.room);
+    let roomMessages = [];
+
+    if (fs.existsSync(roomFile)) {
+      try {
+        roomMessages = JSON.parse(fs.readFileSync(roomFile));
+      } catch (err) {
+        console.error('❌ Fehler beim Lesen:', err);
+      }
     }
-    console.log(`❌ Benutzer getrennt: ${socket.id}`);
+
+    roomMessages.push(message);
+    fs.writeFile(roomFile, JSON.stringify(roomMessages, null, 2), (err) => {
+      if (err) console.error('❌ Fehler beim Speichern:', err);
+    });
   });
 
-  // Neues Event für Profilbild speichern
-socket.on('update profile picture', ({ username, profilePic }) => {
+  socket.on('update profile picture', ({ username, profilePic }) => {
     if (users[username]) {
       users[username].profilePic = profilePic;
       fs.writeFile(usersPath, JSON.stringify(users, null, 2), (err) => {
@@ -179,76 +151,41 @@ socket.on('update profile picture', ({ username, profilePic }) => {
       });
     }
   });
+
+  socket.on('update profile', async ({ oldUsername, newUsername, newPassword }) => {
+    if (!users[oldUsername]) return;
+    if (newUsername && newUsername !== oldUsername) {
+      users[newUsername] = { ...users[oldUsername] };
+      delete users[oldUsername];
+    }
+    if (newPassword) {
+      const hashed = await bcrypt.hash(newPassword, 10);
+      users[newUsername || oldUsername].password = hashed;
+    }
+    fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+  });
+
   socket.on('delete account', ({ username }) => {
-    console.log(`🗑️ Lösche Account von ${username}`);
-  
-    // Benutzer löschen
-    if (users[username]) {
-      delete users[username];
-      fs.writeFile(usersPath, JSON.stringify(users, null, 2), (err) => {
-        if (err) console.error('Fehler beim Löschen des Benutzers:', err);
-        else console.log(`✅ Benutzer ${username} gelöscht.`);
-      });
-    }
-  
-    // Nachrichten löschen
-    for (const room in savedMessages) {
-      savedMessages[room] = savedMessages[room].filter((msg) => msg.username !== username);
-    }
-    fs.writeFile(messagesPath, JSON.stringify(savedMessages, null, 2), (err) => {
-      if (err) console.error('Fehler beim Löschen der Nachrichten:', err);
-      else console.log(`✅ Nachrichten von ${username} gelöscht.`);
-    });
-  
-    // Reload für alle im Raum
-    if (socket.room) {
-      io.to(socket.room).emit('reload messages');
-    }
-  
-    // User rauswerfen
+    if (users[username]) delete users[username];
+    fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
     socket.emit('account deleted');
   });
-  
-  socket.on('register user', (username) => {
-    if (!registeredUsers.includes(username)) {
-        registeredUsers.push(username);
-      }
-    socket.username = username;
-    onlineUsers[username] = { id: socket.id };
-  
-    io.emit('online users', Object.keys(onlineUsers));
-  });
- 
 
-
-  socket.on('search users', (query) => {
-    const matchedUsers = registeredUsers.filter(user => user.toLowerCase().includes(query));
-    socket.emit('search results', matchedUsers);
-  });
-  
   socket.on('disconnect', () => {
     if (socket.username) {
       delete onlineUsers[socket.username];
       io.emit('online users', Object.keys(onlineUsers));
     }
-    console.log(`❌ Benutzer getrennt: ${socket.id}`);
+    console.log(`❌ Getrennt: ${socket.id}`);
   });
-  
+
+  socket.on('search users', (query) => {
+    const matched = registeredUsers.filter(u => u.toLowerCase().includes(query));
+    socket.emit('search results', matched);
+  });
 });
 
-// Alle 5 Sekunden speichern
-setInterval(() => {
-  fs.writeFile(messagesPath, JSON.stringify(savedMessages, null, 2), (err) => {
-    if (err) console.error('Fehler beim Speichern:', err);
-  });
-}, 5000);
-
-// Start
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, async () => {
-  console.log(`🚀 Server läuft auf http://localhost:${PORT}`);
-//   const url =  await ngrok.connect({
-//     addr: PORT,
-//   });
-//   console.log(`🌍 Öffentlich erreichbar unter: ${url}`);
+server.listen(PORT, () => {
+  console.log(`🚀 Server läuft: http://localhost:${PORT}`);
 });

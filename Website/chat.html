@@ -3,19 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Mein Chat</title>
-  <link rel="stylesheet" href="style.css">
-
-</head>
+  <link rel="stylesheet" href="./CSS/chat.css">
 </head>
 <body>
 
-  <button id="menuToggle" class="menu-toggle">☰</button> <!-- Button direkt nach <body> -->
+  <button id="menuToggle" class="menu-toggle">☰</button>
   
   <div class="chat-layout">
     <div class="sidebar">
-
+      <div class="profile" id="profile">
+        
 <!-- Nach dem Profilbereich in der Sidebar -->
 <div id="profileDialog" class="dialog" style="display:none;">
   <div class="dialog-content">
@@ -42,9 +40,7 @@
     </div>
   </div>
 </div>
-
-      <div class="profile" id="profile">
-        <img id="profilePic" src="default-avatar.png" alt="Profilbild">
+        <img id="profilePic" src="/Files/default-avatar.png" alt="Profilbild">
         <span id="profileName">Unbekannt</span>
       </div>
   
@@ -76,28 +72,22 @@
       <div style="position: absolute; bottom: 20px; left: 20px;">
         <button id="deleteAccountBtn">❌ Account löschen</button>
       </div>
-      
     </div>
   
     <div class="chat-area">
       <ul id="messages"></ul>
-      <!-- <form id="form" class="input-container">
-        <input id="input" autocomplete="off" placeholder="Schreibe etwas...">
-        <button id="sendBtn" type="submit">Senden</button>
-      </form> -->
       <form id="form" class="input-container">
         <div id="mediaPreview" class="media-preview"></div>
         <input id="input" autocomplete="off" placeholder="Schreibe etwas...">
         <label for="mediaInput" class="media-button">📷</label>
         <input type="file" id="mediaInput" accept="image/*,video/*" style="display:none;">
-        <button id="sendBtn" type="submit">Senden</button>
+        <button id="sendBtn" type="submit">➤</button>
       </form>
-      
     </div>
   </div>
   
   <script src="/socket.io/socket.io.js"></script>
-  <script src="client.js"></script>
+  <script src="./JS/client.js"></script>
   <script>
     if (!localStorage.getItem('username')) {
       window.location.href = '/';
@@ -111,6 +101,6 @@
     });
   </script>
   
-  </body>
-  
+</body>
 </html>
+

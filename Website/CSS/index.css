@@ -1,0 +1,98 @@
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #000000;
+  color: white;
+  text-shadow: 0 0 3px #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+#infoBox {
+  max-width: 90%;
+  background-color: #0a0a0a;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  margin: 20px auto;
+  position: relative;
+}
+#authContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin-top: 30px;
+}
+
+.auth-box {
+  background-color: #0a0a0a;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.7);
+  width: 300px;
+  text-align: center;
+}
+input {
+  width: 90%;
+  padding: 15px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background-color: #0f0f0f;
+  color: white;
+  outline: 2px solid #0a0a0a;
+}
+
+button {
+  width: 100%;
+  font-size: 17px;
+  padding: 12px 0;
+  margin-top: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #ff0000;
+  color: #0a0a0a;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 2px #ff0000;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+button:hover {
+  background-color: #cc0000;
+  box-shadow: 0 0 5px #ff0000;
+}
+
+hr {
+  margin: 20px 0;
+  border-color: #333;
+}
+p {
+  font-size: 14px;
+  margin-top: 10px;
+}
+#footer {
+  width: 100%;
+  padding: 10px;
+  background-color: #0a0a0a;
+  text-align: center;
+  font-size: 13px;
+  color: #aaa;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+#footer a {
+  color: #ff0000;
+  text-shadow: 0 0 2px #ff0000;
+  text-decoration: none;
+  margin: 0 5px;
+}
+
+#footer a:hover {
+  text-decoration: underline;
+}

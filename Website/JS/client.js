@@ -532,7 +532,7 @@ socket.on('chat history', (messages) => {
       return;
     }
   
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 60 * 1024 * 1024) {
       alert('Datei zu groß! Maximal 5MB.');
       mediaInput.value = '';
       return;

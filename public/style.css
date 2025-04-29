@@ -211,7 +211,7 @@ span {
     background: #1a1a1a;
     border-radius: 5px;
     margin-bottom: 10px;
-    overflow: hidden;
+    overflow-y: auto; 
 }
 
 .input-container {
@@ -363,3 +363,105 @@ span {
         padding: 15px;
     }
 }
+
+/* Profildialog */
+.dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .dialog-content {
+    background: #2c2c2c;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #444;
+  }
+  
+  .dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  /* Medien-Nachrichten */
+  .media-message {
+    max-width: 100%;
+    margin-top: 10px;
+    border-radius: 5px;
+  }
+  
+  .media-message img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 5px;
+  }
+  
+  .media-message video {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 5px;
+  }
+  
+  .media-preview {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  .media-preview img,
+  .media-preview video {
+    max-width: 100px;
+    max-height: 80px;
+    border-radius: 5px;
+    cursor: pointer;
+    object-fit: cover;
+    border: 2px solid #ff3c00;
+  }
+  
+  .media-fullscreen-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .media-fullscreen-overlay img,
+  .media-fullscreen-overlay video {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+  }
+  
