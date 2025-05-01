@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>📖 Dokumentation – OpenChat</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #121212;
+      color: #e0e0e0;
+    }
+    a { color: #4dabf7; }
+    pre, code { background: #1e1e1e; padding: 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>📄 Projekt-Dokumentation</h1>
+  <div id="readmeContent">Lade Dokumentation...</div>
+
+  <script>
+    const readmeUrl = 'https://raw.githubusercontent.com/7ucg/chat-app/main/README.md'; 
+
+    async function loadReadme() {
+      const res = await fetch(readmeUrl);
+      const text = await res.text();
+
+      const converter = new showdown.Converter();
+      const html = converter.makeHtml(text);
+
+      document.getElementById('readmeContent').innerHTML = html;
+    }
+
+    loadReadme();
+  </script>
+
+  <!-- Markdown zu HTML Konverter (Showdown) -->
+  <script src="https://cdn.jsdelivr.net/npm/showdown/dist/showdown.min.js"></script>
+</body>
+</html>

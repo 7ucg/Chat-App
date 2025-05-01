@@ -1,22 +1,21 @@
 {
   "name": "chat-app",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "AutoRestarter.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node AutoRestarter.js",
+    "build": "npm i"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "Baron",
+  "license": "MIT",
+  "description": "Webbasiertes Chat-System mit Benutzerkonten",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
+    "multer": "^1.4.5-lts.2",
     "ngrok": "^5.0.0-beta.2",
     "socket.io": "^4.8.1"
-  },
-  "devDependencies": {
-    "webpack-cli": "^6.0.1"
   }
 }

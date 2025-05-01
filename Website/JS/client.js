@@ -29,6 +29,9 @@ let currentRoom = null;
 if (!localStorage.getItem("username")) {
     window.location.href = "/";
   }
+
+
+
 socket.emit('register user', currentUsername); // <-- JETZT hier, erst wenn currentUsername existiert
 // Jedes Mal, wenn im Suchfeld getippt wird:
 userSearchInput.addEventListener('input', (e) => {
@@ -85,97 +88,102 @@ roomsList.addEventListener('click', (event) => {
     document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
     event.target.classList.add('active');
   });
-  
-  
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (!currentRoom) return alert('Bitte wähle einen Raum.');
-  
-    const messageText = inputField.value.trim();
-    const file = mediaInput.files[0];
-  
-    if (!messageText && !file) {
-      alert('Bitte gib eine Nachricht ein oder wähle ein Medium.');
-      return;
-    }
-  
-    const message = {
-      username: currentUsername,
-      text: messageText,
-      profilePic: profilePic.src
+ 
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!currentRoom) return alert('Bitte wähle einen Raum.');
+
+  const messageText = inputField.value.trim();
+  const file = mediaInput.files[0];
+
+  if (!messageText && !file) {
+    alert('Bitte gib eine Nachricht ein oder wähle ein Medium.');
+    return;
+  }
+
+  const message = {
+    username: currentUsername,
+    text: messageText,
+    profilePic: profilePic.src
+  };
+
+  const resetAfterSend = () => {
+    inputField.value = '';
+    mediaInput.value = '';
+    mediaPreview.innerHTML = '';
+  };
+
+  if (!file) {
+    socket.emit('chat message', message);
+    resetAfterSend();
+    return;
+  }
+
+  const allowedTypes = ['image/png', 'image/jpeg', 'video/mp4'];
+  if (!allowedTypes.includes(file.type)) {
+    alert('Nur PNG, JPG oder MP4 erlaubt!');
+    mediaInput.value = '';
+    return;
+  }
+
+  const isVideo = file.type.startsWith('video/');
+
+  if (isVideo) {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.onloadedmetadata = async () => {
+      window.URL.revokeObjectURL(video.src);
+      if (video.duration > 120) {
+        alert('Video zu lang! Maximal 2 Minuten.');
+        mediaInput.value = '';
+        return;
+      }
+      await uploadAndSend();
     };
+    video.src = URL.createObjectURL(file);
+    return;
+  }
+
+  // Bilder oder akzeptierte Videos sofort senden
+  await uploadAndSend();
+
+  async function uploadAndSend() {
+    const formData = new FormData();
+    formData.append('media', file);
   
-    // Cleanup-Funktion nach dem Senden
-    const resetAfterSend = () => {
-      inputField.value = '';
-      mediaInput.value = '';
-      mediaPreview.innerHTML = '';
-    };
+    try {
+      const response = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
   
-    // Nur Textnachricht senden
-    if (!file) {
-      socket.emit('chat message', message);
-      resetAfterSend();
-      return;
-    }
+      if (!response.ok) throw new Error('Upload fehlgeschlagen');
   
-    // Mit Medium (Bild/Video)
-    const allowedTypes = ['image/png', 'image/jpeg', 'video/mp4'];
-    if (!allowedTypes.includes(file.type)) {
-      alert('Nur PNG, JPG oder MP4 erlaubt!');
-      mediaInput.value = '';
-      return;
-    }
-  
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Datei zu groß! Maximal 10MB.');
-      mediaInput.value = '';
-      return;
-    }
-  
-    const reader = new FileReader();
-    reader.onload = function (event) {
+      const result = await response.json();
       message.media = {
-        type: file.type,
-        data: event.target.result
+        type: result.type,
+        url: result.mediaUrl
       };
   
       socket.emit('chat message', message);
       resetAfterSend();
-    };
   
-    reader.onerror = function () {
-      alert('Fehler beim Lesen der Datei.');
-      mediaInput.value = '';
-    };
+    } catch (err) {
+      alert('Fehler beim Hochladen der Datei.');
+      console.error(err);
+    }
+  }
   
-    reader.readAsDataURL(file);
-  });
-  
+});
 
-  
-// Nachricht empfangen
-// socket.on('chat message', (message) => {
-//   const li = document.createElement('li');
-//   li.classList.add('message-item');
-
-// //   li.innerHTML = `
-// //     <div class="message-line">
-// //       <img src="${message.profilePic || 'default-avatar.png'}" class="message-pic">
-// //       <span class="message-name">${message.username}:</span>
-// //       <span class="message-text">${message.text}</span>
-// //     </div>
-// //   `;
-//   messagesList.appendChild(li);
-//   messagesList.scrollTop = messagesList.scrollHeight;
-
-//   setTimeout(() => {
-//     li.classList.add('fade-in');
-//   }, 10);
-// });
+// 📦 Medien im Chat anzeigen
 socket.on('chat message', (message) => {
   const li = document.createElement('li');
   li.classList.add('message-item');
+
+  const count = messagesList.children.length;
+  document.getElementById('messageCounter').textContent = `${count} Nachrichten`;
 
   const messageLine = document.createElement('div');
   messageLine.classList.add('message-line');
@@ -197,20 +205,16 @@ socket.on('chat message', (message) => {
   if (message.text) messageLine.appendChild(textSpan);
   li.appendChild(messageLine);
 
-  // ✅ Medien anzeigen und klickbar machen
-  if (message.media) {
+  if (message.media && message.media.url) {
     const mediaWrapper = document.createElement('div');
     mediaWrapper.classList.add('media-message');
 
-    const type = message.media.type;
-    const src = message.media.data;
-
-    const media = document.createElement(type.startsWith('image/') ? 'img' : 'video');
-    media.src = src;
-    if (type.startsWith('video/')) media.controls = true;
+    const media = document.createElement(message.media.type.startsWith('image/') ? 'img' : 'video');
+    media.src = message.media.url;
+    if (message.media.type.startsWith('video/')) media.controls = true;
 
     media.style.cursor = 'pointer';
-    media.addEventListener('click', () => openFullscreen(src, type));
+    media.addEventListener('click', () => openFullscreen(message.media.url, message.media.type));
 
     mediaWrapper.appendChild(media);
     li.appendChild(mediaWrapper);
@@ -220,11 +224,12 @@ socket.on('chat message', (message) => {
   messagesList.scrollTop = messagesList.scrollHeight;
 });
 
-  
-  
-  
+// ⏪ Chatverlauf anzeigen
 socket.on('chat history', (messages) => {
-  messagesList.innerHTML = ''; // Leeren
+  messagesList.innerHTML = '';
+  // 👇 Aktualisiere Header
+  document.getElementById('roomTitle').textContent = `# ${currentRoom}`;
+  document.getElementById('messageCounter').textContent = `${messages.length} Nachrichten`;
 
   messages.forEach((message) => {
     const li = document.createElement('li');
@@ -250,20 +255,16 @@ socket.on('chat history', (messages) => {
     if (message.text) messageLine.appendChild(textSpan);
     li.appendChild(messageLine);
 
-    // ✅ Medien (Bild/Video) anzeigen & klickbar
-    if (message.media) {
+    if (message.media && message.media.url) {
       const mediaWrapper = document.createElement('div');
       mediaWrapper.classList.add('media-message');
 
-      const type = message.media.type;
-      const src = message.media.data;
-
-      const media = document.createElement(type.startsWith('image/') ? 'img' : 'video');
-      media.src = src;
-      if (type.startsWith('video/')) media.controls = true;
+      const media = document.createElement(message.media.type.startsWith('image/') ? 'img' : 'video');
+      media.src = message.media.url;
+      if (message.media.type.startsWith('video/')) media.controls = true;
 
       media.style.cursor = 'pointer';
-      media.addEventListener('click', () => openFullscreen(src, type));
+      media.addEventListener('click', () => openFullscreen(message.media.url, message.media.type));
 
       mediaWrapper.appendChild(media);
       li.appendChild(mediaWrapper);
@@ -274,6 +275,7 @@ socket.on('chat history', (messages) => {
 
   messagesList.scrollTop = messagesList.scrollHeight;
 });
+
 
 
   
@@ -428,64 +430,100 @@ socket.on('chat history', (messages) => {
   window.addEventListener('load', setAppHeight);
 
 
-  
-  document.getElementById('saveProfileChanges').addEventListener('click', () => {
-    const newUsername = document.getElementById('editUsername').value.trim();
-    const newPassword = document.getElementById('editPassword').value.trim();
-    const profilePicInput = document.getElementById('editProfilePic');
-    const file = profilePicInput.files[0];
-  
-    const updateAndNotify = () => {
-      socket.emit('update profile', {
-        oldUsername: currentUsername,
-        newUsername,
-        newPassword
-      });
-  
-      if (newUsername) {
-        localStorage.setItem('username', newUsername);
-        document.getElementById('profileName').textContent = newUsername;
-      }
-  
-      showNotification("Profil erfolgreich aktualisiert!");
-      document.getElementById('profileDialog').style.display = 'none';
-    };
-  
-    if (file) {
-      const allowedTypes = ['image/png', 'image/jpeg'];
-      if (!allowedTypes.includes(file.type)) {
-        alert('Nur PNG und JPG Dateien sind erlaubt!');
-        profilePicInput.value = '';
-        return;
-      }
-  
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          if (img.width > 10000 || img.height > 10000) {
-            alert('Das Bild ist zu groß! Maximal 10000x10000 Pixel.');
-            profilePicInput.value = '';
-            return;
-          }
-  
-          const imageData = e.target.result;
-          profilePic.src = imageData;
-          localStorage.setItem('profilePic', imageData);
+  const profileDialog = document.getElementById('profileDialog');
+const profileButton = document.getElementById('profile');
+const cancelBtn = document.getElementById('cancelProfileDialog');
+const saveBtn = document.getElementById('saveProfileChanges');
+
+// Öffnen
+profileButton.addEventListener('click', () => {
+  profileDialog.classList.add('open');
+});
+
+// Schließen (Abbrechen oder Speichern)
+cancelBtn.addEventListener('click', () => {
+  profileDialog.classList.remove('open');
+});
+ 
+// ✅ Neues Profilbild hochladen und speichern
+saveBtn.addEventListener('click', async () => {
+  const newUsername = document.getElementById('editUsername').value.trim();
+  const newPassword = document.getElementById('editPassword').value.trim();
+  const profilePicInput = document.getElementById('editProfilePic');
+  const file = profilePicInput.files[0];
+
+  const updateAndNotify = () => {
+    socket.emit('update profile', {
+      oldUsername: currentUsername,
+      newUsername,
+      newPassword
+    });
+
+    if (newUsername) {
+      localStorage.setItem('username', newUsername);
+      currentUsername = newUsername;
+      document.getElementById('profileName').textContent = newUsername;
+    }
+
+    showNotification('Profil erfolgreich aktualisiert!');
+    profileDialog.classList.remove('open');
+  };
+
+  if (file) {
+    const allowedTypes = ['image/png', 'image/jpeg'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Nur PNG und JPG erlaubt!');
+      profilePicInput.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = new Image();
+      img.onload = async function () {
+        if (img.width > 10000 || img.height > 10000) {
+          alert('Bild zu groß! Maximal 10000x10000 Pixel.');
+          profilePicInput.value = '';
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('media', file);
+        try {
+          const response = await fetch(`/upload?username=${currentUsername}&profile=true`, {
+
+
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) throw new Error('Fehler beim Upload');
+
+
+          const result = await response.json();
+
+          profilePic.src = result.mediaUrl;
+          localStorage.setItem('profilePic', result.mediaUrl);
+
           socket.emit('update profile picture', {
             username: currentUsername,
-            profilePic: imageData
+            profilePic: result.mediaUrl
           });
-  
+
           updateAndNotify();
-        };
-        img.src = e.target.result;
+        } catch (err) {
+          alert('Upload fehlgeschlagen.');
+          console.error(err);
+        }
       };
-      reader.readAsDataURL(file);
-    } else {
-      updateAndNotify();
-    }
-  });
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    updateAndNotify();
+  }
+});
+
   
   // ✅ Push-Noti oben Mitte
   function showNotification(text) {
@@ -509,14 +547,8 @@ socket.on('chat history', (messages) => {
     setTimeout(() => notif.remove(), 3000);
   }
   
-  
-  document.getElementById('profile').addEventListener('click', () => {
-    document.getElementById('profileDialog').style.display = 'flex';
-  });
-  document.getElementById('cancelProfileDialog').addEventListener('click', () => {
-    document.getElementById('profileDialog').style.display = 'none';
-  });
-  
+
+
   const mediaInput = document.getElementById('mediaInput');
   const mediaPreview = document.getElementById('mediaPreview');
   
@@ -532,7 +564,7 @@ socket.on('chat history', (messages) => {
       return;
     }
   
-    if (file.size > 60 * 1024 * 1024) {
+    if (file.size > 100 * 1024 * 1024) {
       alert('Datei zu groß! Maximal 5MB.');
       mediaInput.value = '';
       return;

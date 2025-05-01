@@ -171,11 +171,26 @@ button:hover {
   background: #ff0000;
   border-color: #ff0000;
 }
-.message-item {
+/* .message-item {
   display: flex;
   gap: 12px;
   align-items: center;
   animation: fadeIn 0.4s ease;
+} */
+.message-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  animation: fadeIn 0.4s ease;
+}
+
+.message-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 .message-item img {
   width: 44px;
@@ -217,18 +232,21 @@ button:hover {
   }
 }
 
-/* Profildialog */
 .dialog {
+  display: none; /* Standard: Versteckt */
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.7);
-  display: flex;
+  background: rgba(0, 0, 0, 0.7);
   justify-content: center;
   align-items: center;
   z-index: 9999;
+}
+
+.dialog.open {
+  display: flex;
 }
 
 .dialog-content {
@@ -238,6 +256,8 @@ button:hover {
   width: 90%;
   max-width: 400px;
 }
+
+
 
 .form-group {
   margin-bottom: 15px;
@@ -261,25 +281,25 @@ button:hover {
   gap: 10px;
   margin-top: 20px;
 }
-
-/* Medien-Nachrichten */
 .media-message {
-  max-width: 100%;
-  margin-top: 10px;
-  border-radius: 5px;
+  width: 100%;
+  margin-top: 5px;
+  border: 1px solid #444;
+  padding: 6px;
+  border-radius: 10px;
+  background: #111;
 }
 
-.media-message img {
-  max-width: 100%;
-  max-height: 300px;
-  border-radius: 5px;
-}
-
+.media-message img,
 .media-message video {
   max-width: 100%;
-  max-height: 300px;
-  border-radius: 5px;
+  height: auto;
+  border-radius: 8px;
+  object-fit: contain;
+  max-height: 400px;
 }
+
+
 
 .media-preview {
   display: flex;
@@ -316,4 +336,25 @@ button:hover {
   max-height: 90%;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+
+
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1f1f1f;
+  padding: 10px 15px;
+  border-bottom: 1px solid #333;
+  color: #fff;
+}
+
+.room-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.room-header span {
+  font-size: 0.9rem;
+  color: #aaa;
 }

@@ -5,68 +5,101 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const multer = require('multer');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// 📁 Sicherstellen, dass "Databank" existiert
 const databankDir = path.join(__dirname, 'Databank');
 if (!fs.existsSync(databankDir)) fs.mkdirSync(databankDir);
 
 const usersPath = path.join(__dirname, 'users.json');
+let users = fs.existsSync(usersPath) ? JSON.parse(fs.readFileSync(usersPath)) : {};
 
-// JSON-Dateien laden
-let users = {};
-if (fs.existsSync(usersPath)) {
-  users = JSON.parse(fs.readFileSync(usersPath));
-}
-
-// Hilfsfunktion für Pfad zu Raumdatei
 function getRoomFilePath(room) {
   const safeRoom = room.replace(/[^a-z0-9_\-]/gi, '_');
   return path.join(databankDir, `${safeRoom}.json`);
 }
 
 app.use(express.json());
-app.use(session({
-    secret: 'lol',
-    resave: false,
-    saveUninitialized: false
-}));
+app.use(session({ secret: 'lol', resave: false, saveUninitialized: false }));
 app.use(express.static(path.join(__dirname, 'Website')));
 
-// Registrierung
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const username = req.query.username;
+    let targetDir;
+
+    if (req.query.profile === 'true' && username) {
+      targetDir = path.join(uploadDir, 'User', username);
+    } else {
+      targetDir = path.join(uploadDir, 'media');
+    }
+
+    fs.mkdirSync(targetDir, { recursive: true });
+    cb(null, targetDir);
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    const safeName = file.originalname.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    cb(null, `${timestamp}_${safeName}`);
+  }
+});
+
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/png', 'image/jpeg', 'video/mp4'];
+    cb(null, allowed.includes(file.mimetype));
+  }
+});
+
+app.post('/upload', upload.single('media'), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'Keine Datei hochgeladen' });
+
+  const username = req.query.username;
+  const isProfile = req.query.profile === 'true';
+
+  const basePath = isProfile && username
+    ? `/uploads/User/${username}`
+    : `/uploads/media`;
+
+  const mediaUrl = `${basePath}/${req.file.filename}`;
+
+  res.status(200).json({ mediaUrl, type: req.file.mimetype });
+});
+
+
+app.use('/uploads', express.static(uploadDir));
+
 app.post('/register', async (req, res) => {
-    const { username, password, profilePic } = req.body;
-    const registeredAt = new Date().toISOString();
+  const { username, password, profilePic } = req.body;
+  if (!username || !password) return res.status(400).json({ message: 'Benutzername und Passwort sind erforderlich!' });
+  if (users[username]) return res.status(400).json({ message: 'Benutzername bereits vergeben!' });
 
-    if (!username || !password) {
-      return res.status(400).json({ message: 'Benutzername und Passwort sind erforderlich!' });
-    }
-
-    if (users[username]) {
-      return res.status(400).json({ message: 'Benutzername bereits vergeben!' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    users[username] = { password: hashedPassword, profilePic: profilePic || '', registeredAt };
-    fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
-    res.status(200).json({ message: 'Erfolgreich registriert!' });
+  const hashedPassword = await bcrypt.hash(password, 10);
+  users[username] = { password: hashedPassword, profilePic: profilePic || '', registeredAt: new Date().toISOString() };
+  fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+  res.status(200).json({ message: 'Erfolgreich registriert!' });
 });
 
-// Login
 app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    const user = users[username];
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-      return res.status(400).json({ message: 'Falscher Benutzername oder Passwort!' });
-    }
-
-    req.session.username = username;
-    res.status(200).json({ message: 'Erfolgreich eingeloggt!', username, profilePic: user.profilePic });
+  const { username, password } = req.body;
+  const user = users[username];
+  if (!user || !bcrypt.compareSync(password, user.password)) {
+    return res.status(400).json({ message: 'Falscher Benutzername oder Passwort!' });
+  }
+  req.session.username = username;
+  res.status(200).json({ message: 'Erfolgreich eingeloggt!', username, profilePic: user.profilePic });
 });
 
-// Nur eingeloggte dürfen den Chat sehen
 function authMiddleware(req, res, next) {
   if (!req.session.username) return res.redirect('/');
   next();
@@ -96,16 +129,7 @@ io.on('connection', (socket) => {
     console.log(`📢 ${username} betritt Raum "${room}"`);
 
     const roomFile = getRoomFilePath(room);
-    let roomMessages = [];
-
-    if (fs.existsSync(roomFile)) {
-      try {
-        roomMessages = JSON.parse(fs.readFileSync(roomFile));
-      } catch (err) {
-        console.error('❌ Fehler beim Laden:', err);
-      }
-    }
-
+    let roomMessages = fs.existsSync(roomFile) ? JSON.parse(fs.readFileSync(roomFile)) : [];
     socket.emit('chat history', roomMessages);
 
     socket.to(room).emit('chat message', {
@@ -126,16 +150,7 @@ io.on('connection', (socket) => {
     io.to(socket.room).emit('chat message', message);
 
     const roomFile = getRoomFilePath(socket.room);
-    let roomMessages = [];
-
-    if (fs.existsSync(roomFile)) {
-      try {
-        roomMessages = JSON.parse(fs.readFileSync(roomFile));
-      } catch (err) {
-        console.error('❌ Fehler beim Lesen:', err);
-      }
-    }
-
+    const roomMessages = fs.existsSync(roomFile) ? JSON.parse(fs.readFileSync(roomFile)) : [];
     roomMessages.push(message);
     fs.writeFile(roomFile, JSON.stringify(roomMessages, null, 2), (err) => {
       if (err) console.error('❌ Fehler beim Speichern:', err);

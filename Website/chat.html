@@ -12,10 +12,14 @@
   
   <div class="chat-layout">
     <div class="sidebar">
-      <div class="profile" id="profile">
-        
-<!-- Nach dem Profilbereich in der Sidebar -->
-<div id="profileDialog" class="dialog" style="display:none;">
+     <!-- Der Auslöser -->
+<div class="profile" id="profile">
+  <img id="profilePic" src="/Files/default-avatar.png" alt="Profilbild">
+  <span id="profileName">Unbekannt</span>
+</div>
+
+<!-- Der Dialog MUSS außerhalb liegen -->
+<div id="profileDialog" class="dialog">
   <div class="dialog-content">
     <h3>Profil bearbeiten</h3>
     
@@ -40,9 +44,7 @@
     </div>
   </div>
 </div>
-        <img id="profilePic" src="/Files/default-avatar.png" alt="Profilbild">
-        <span id="profileName">Unbekannt</span>
-      </div>
+
   
       <input type="file" id="fileInput" style="display:none;">
   
@@ -73,8 +75,13 @@
         <button id="deleteAccountBtn">❌ Account löschen</button>
       </div>
     </div>
-  
+   
+    
     <div class="chat-area">
+      <div id="roomHeader" class="room-header">
+        <h2 id="roomTitle"># Raum</h2>
+        <span id="messageCounter">0 Nachrichten</span>
+      </div>
       <ul id="messages"></ul>
       <form id="form" class="input-container">
         <div id="mediaPreview" class="media-preview"></div>
@@ -100,6 +107,9 @@
       sidebar.classList.toggle('open');
     });
   </script>
+ 
+
+  
   
 </body>
 </html>
