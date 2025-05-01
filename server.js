@@ -140,7 +140,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('chat message', (data) => {
+    const id = Date.now().toString();
     const message = {
+      id,
       username: data.username,
       text: data.text,
       profilePic: data.profilePic || 'default-avatar.png',
@@ -184,6 +186,28 @@ io.on('connection', (socket) => {
     if (users[username]) delete users[username];
     fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
     socket.emit('account deleted');
+  });
+
+  socket.on('edit message', ({ id, newText, room }) => {
+    const file = getRoomFilePath(room);
+    const messages = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : [];
+    const msg = messages.find(m => m.id === id);
+    if (msg && msg.username === socket.username) {
+      msg.text = newText;
+      fs.writeFileSync(file, JSON.stringify(messages, null, 2));
+      io.to(room).emit('message edited', { id, newText });
+    }
+  });
+
+  socket.on('delete message', ({ id, room }) => {
+    const file = getRoomFilePath(room);
+    let messages = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : [];
+    const index = messages.findIndex(m => m.id === id);
+    if (index !== -1 && messages[index].username === socket.username) {
+      messages.splice(index, 1);
+      fs.writeFileSync(file, JSON.stringify(messages, null, 2));
+      io.to(room).emit('message deleted', { id });
+    }
   });
 
   socket.on('disconnect', () => {

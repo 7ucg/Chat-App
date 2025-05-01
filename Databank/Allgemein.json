@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "1746097161605",
+    "username": "6ucg",
+    "text": "test",
+    "profilePic": "http://localhost:3000/uploads/User/6ucg/1746090046614_reply_jpg",
+    "media": null
+  },
+  {
+    "id": "1746097349339",
+    "username": "6ucg",
+    "text": ".",
+    "profilePic": "http://localhost:3000/uploads/User/6ucg/1746090046614_reply_jpg",
+    "media": null
+  }
+]

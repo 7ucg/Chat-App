@@ -181,6 +181,10 @@ form.addEventListener('submit', async (e) => {
 socket.on('chat message', (message) => {
   const li = document.createElement('li');
   li.classList.add('message-item');
+  li.dataset.id = message.id;
+li.dataset.username = message.username;
+li.dataset.text = message.text;
+
 
   const count = messagesList.children.length;
   document.getElementById('messageCounter').textContent = `${count} Nachrichten`;
@@ -199,6 +203,33 @@ socket.on('chat message', (message) => {
   const textSpan = document.createElement('span');
   textSpan.classList.add('message-text');
   textSpan.textContent = message.text;
+
+  // 📌 Hier kommt der Aktionsbutton rein:
+if (message.username === currentUsername) {
+  const actionButton = document.createElement('button');
+  actionButton.classList.add('msg-actions-btn');
+  actionButton.innerHTML = '⋮';
+  actionButton.title = 'Aktionen';
+  actionButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showMessageMenu(message.id, message.username, message.text, li);
+  });
+  messageLine.appendChild(actionButton);
+}
+
+  
+// 📦 Menü-Knopf in Nachricht einbauen
+if (message.username === currentUsername) {
+  const actionButton = document.createElement('button');
+  actionButton.classList.add('msg-actions-btn');
+  actionButton.innerHTML = '⋮';
+  actionButton.title = 'Aktionen';
+  actionButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showMessageMenu(message.id, message.username, message.text, li);
+  });
+  messageLine.appendChild(actionButton);
+}
 
   messageLine.appendChild(img);
   messageLine.appendChild(usernameSpan);
@@ -226,6 +257,7 @@ socket.on('chat message', (message) => {
 
 // ⏪ Chatverlauf anzeigen
 socket.on('chat history', (messages) => {
+
   messagesList.innerHTML = '';
   // 👇 Aktualisiere Header
   document.getElementById('roomTitle').textContent = `# ${currentRoom}`;
@@ -250,7 +282,21 @@ socket.on('chat history', (messages) => {
     textSpan.classList.add('message-text');
     textSpan.textContent = message.text;
 
-    messageLine.appendChild(img);
+    
+// 📦 Menü-Knopf in Nachricht einbauen
+if (message.username === currentUsername) {
+  const actionButton = document.createElement('button');
+  actionButton.classList.add('msg-actions-btn');
+  actionButton.innerHTML = '⋮';
+  actionButton.title = 'Aktionen';
+  actionButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showMessageMenu(message.id, message.username, message.text, li);
+  });
+  messageLine.appendChild(actionButton);
+}
+
+  messageLine.appendChild(img);
     messageLine.appendChild(usernameSpan);
     if (message.text) messageLine.appendChild(textSpan);
     li.appendChild(messageLine);
@@ -595,3 +641,95 @@ saveBtn.addEventListener('click', async () => {
     overlay.addEventListener('click', () => overlay.remove());
   }
   
+  messagesList.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+  
+    const messageItem = e.target.closest('.message-item');
+    if (!messageItem || messageItem.dataset.username !== currentUsername) return;
+  
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'context-menu';
+    contextMenu.style.top = `${e.clientY}px`;
+    contextMenu.style.left = `${e.clientX}px`;
+    contextMenu.innerHTML = `
+      <button id="editMsg">✏️ Bearbeiten</button>
+      <button id="deleteMsg">🗑️ Löschen</button>
+    `;
+  
+    document.body.appendChild(contextMenu);
+  
+    const removeMenu = () => contextMenu.remove();
+    setTimeout(() => window.addEventListener('click', removeMenu, { once: true }));
+  
+    contextMenu.querySelector('#editMsg').onclick = () => {
+      const newText = prompt('Neue Nachricht:', messageItem.dataset.text);
+      if (newText) {
+        // socket.emit('edit message', { ... });
+        showNotification('Bearbeiten noch nicht implementiert');
+      }
+    };
+  
+    contextMenu.querySelector('#deleteMsg').onclick = () => {
+      if (confirm('Nachricht löschen?')) {
+        // socket.emit('delete message', { ... });
+        showNotification('Löschen noch nicht implementiert');
+      }
+    };
+  });
+  messagesList.addEventListener('touchstart', (e) => {
+    const messageItem = e.target.closest('.message-item');
+    if (!messageItem || messageItem.dataset.username !== currentUsername) return;
+  
+    let touchTimer = setTimeout(() => {
+      // zeige Menü wie oben
+      const options = confirm('Nachricht bearbeiten oder löschen?');
+      if (options) showNotification('Mobile Menü noch nicht implementiert');
+    }, 600); // 600ms „long press“
+  
+    messageItem.addEventListener('touchend', () => clearTimeout(touchTimer), { once: true });
+  });
+    
+  socket.on('message edited', ({ id, newText }) => {
+    const msg = [...document.querySelectorAll('.message-item')].find(el => el.dataset.id === id);
+    if (msg) {
+      const textSpan = msg.querySelector('.message-text');
+      if (textSpan) {
+        textSpan.textContent = newText + ' ✏️';
+      }
+    }
+  });
+  
+  socket.on('message deleted', ({ id }) => {
+    const msg = [...document.querySelectorAll('.message-item')].find(el => el.dataset.id === id);
+    if (msg) {
+      msg.remove();
+    }
+  });
+  
+
+// 🔽 Neue Menü-Schaltfläche direkt in Nachrichten einbauen
+function showMessageMenu(id, author, text, container) {
+  if (author !== currentUsername) return;
+
+  const menu = document.createElement('div');
+  menu.className = 'message-action-menu';
+  menu.innerHTML = `
+    <button onclick="editMessage('${id}', \`${text.replace(/`/g, '\`')}\`)">✏️ Bearbeiten</button>
+    <button onclick="deleteMessage('${id}')">🗑️ Löschen</button>
+  `;
+  container.appendChild(menu);
+  setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }));
+}
+
+function editMessage(id, oldText) {
+  const newText = prompt('Neue Nachricht:', oldText);
+  if (newText && newText !== oldText) {
+    socket.emit('edit message', { id, newText, room: currentRoom });
+  }
+}
+
+function deleteMessage(id) {
+  if (confirm('Nachricht löschen?')) {
+    socket.emit('delete message', { id, room: currentRoom });
+  }
+}
