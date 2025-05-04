@@ -5,12 +5,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node AutoRestarter.js",
-    "build": "npm i"
+    "build": "npm "
   },
   "author": "Baron",
   "license": "MIT",
   "description": "Webbasiertes Chat-System mit Benutzerkonten",
   "dependencies": {
+    "basic-auth": "^2.0.1",
     "bcrypt": "^5.1.1",
     "express": "^5.1.0",
     "express-session": "^1.18.1",

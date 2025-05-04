@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>🛠 Bugreports – Adminbereich</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #000000;
+      color: #3a3a3a;
+    }
+    h1 {
+      text-align: center;
+    }
+    #search {
+      margin: 1rem auto;
+      display: block;
+      width: 300px;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    .report {
+      background: #fff;
+      border-left: 5px solid #007BFF;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-radius: 6px;
+    }
+    .timestamp {
+      color: #2b2b2b;
+      font-size: 0.9rem;
+    }
+    .username {
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>📋 Gemeldete Bugs</h1>
+  <input type="text" id="search" placeholder="Suchen...">
+
+  <div id="reportContainer"></div>
+
+  <script>
+    let reports = [];
+
+    fetch('/bug_reports.json')
+      .then(res => res.json())
+      .then(data => {
+        reports = data.reverse(); // Neueste zuerst
+        renderReports(reports);
+      });
+
+    function renderReports(data) {
+      const container = document.getElementById('reportContainer');
+      container.innerHTML = '';
+      data.forEach(report => {
+        const div = document.createElement('div');
+        div.className = 'report';
+        div.innerHTML = `
+          <div class="username">${report.username || 'Unbekannt'}</div>
+          <div class="timestamp">${new Date(report.timestamp).toLocaleString()}</div>
+          <p>${report.message}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Suchfunktion
+    document.getElementById('search').addEventListener('input', function () {
+      const keyword = this.value.toLowerCase();
+      const filtered = reports.filter(r =>
+        r.message.toLowerCase().includes(keyword) ||
+        (r.username && r.username.toLowerCase().includes(keyword))
+      );
+      renderReports(filtered);
+    });
+  </script>
+</body>
+</html>
