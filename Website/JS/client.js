@@ -410,6 +410,24 @@ socket.on('chat history', (messages) => {
 });
 
 
+document.getElementById("refreshChatBtn").addEventListener("click", (event) => {
+  const room = currentRoom
+  if (!room) return;
+
+  if (room === 'Friends') {
+    toggleFriendsSection();
+    return; // Nicht normalen Raum joinen
+  }
+
+  document.getElementById('friendsSection').style.display = 'none'; // Friends Bereich verstecken
+  
+  messagesList.innerHTML = '';
+  socket.emit('join room', { username: currentUsername, room });
+
+  document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
+  event.target.classList.add('active');
+});
+
 
 
 document.getElementById('deleteAccountBtn').addEventListener('click', () => {
