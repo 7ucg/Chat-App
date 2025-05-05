@@ -12,5 +12,12 @@
     "text": "test",
     "profilePic": "http://localhost:3000/uploads/User/test2/1746349707682_thumb_jpg",
     "media": null
+  },
+  {
+    "id": "1746441290971",
+    "username": "6ucg",
+    "text": ".",
+    "profilePic": "http://localhost:3000/Files/default-avatar.png",
+    "media": null
   }
 ]

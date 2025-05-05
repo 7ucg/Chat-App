@@ -168,8 +168,8 @@ function authMiddleware(req, res, next) {
   next();
 }
 
-app.get("/chat.html", authMiddleware, (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "chat.html"));
+app.get("/chat", authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "chat"));
 });
 
 let onlineUsers = {};
