@@ -5,8 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node AutoRestarter.js",
-    "build": "npm i && webpack",
-    "webpack": "webpack"
+    "build": "npm i"
   },
   "author": "Baron",
   "license": "MIT",
