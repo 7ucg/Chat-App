@@ -280,7 +280,9 @@ socket.on('chat message', (message) => {
   messageLine.classList.add('message-line');
 
   const img = document.createElement('img');
-  img.src = message.profilePic || 'default-avatar.png';
+  const baseURL = window.location.origin;
+  img.src = message.profilePic || `${baseURL}/Files/default-avatar.png`;
+  // img.src = message.profilePic || 'default-avatar.png';
   img.classList.add('message-pic');
 
   const usernameSpan = document.createElement('span');
@@ -358,7 +360,9 @@ socket.on('chat history', (messages) => {
     messageLine.classList.add('message-line');
 
     const img = document.createElement('img');
-    img.src = message.profilePic || 'default-avatar.png';
+    const baseURL = window.location.origin;
+    img.src = message.profilePic || `${baseURL}/Files/default-avatar.png`;
+    // img.src = message.profilePic || 'default-avatar.png';
     img.classList.add('message-pic');
 
     const usernameSpan = document.createElement('span');
