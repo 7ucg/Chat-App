@@ -2,6 +2,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
+const { exec } = require('child_process');
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
@@ -339,3 +340,22 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`🚀 Server läuft: http://localhost:${PORT}`);
 });
+
+function startBackup() {
+  console.log('Starte Backup...');
+
+  exec('node backup.js', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Fehler beim Ausführen von backup.js: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      console.error(`stderr: ${stderr}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+  });
+}
+
+
+setInterval(startBackup, 300000); // 5 Minuten
