@@ -11,6 +11,7 @@
   "license": "MIT",
   "description": "Webbasiertes Chat-System mit Benutzerkonten",
   "dependencies": {
+    "archiver": "^7.0.1",
     "basic-auth": "^2.0.1",
     "bcrypt": "^5.1.1",
     "child_process": "^1.0.2",
