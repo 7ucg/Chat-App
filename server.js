@@ -19,7 +19,12 @@ let users = fs.existsSync(usersPath)
   ? JSON.parse(fs.readFileSync(usersPath))
   : {};
 
+// function getRoomFilePath(room) {
+//   const safeRoom = room.replace(/[^a-z0-9_\-]/gi, "_");
+//   return path.join(databankDir, `${safeRoom}.json`);
+// }
 function getRoomFilePath(room) {
+  if (!room || typeof room !== "string") room = "Allgemein";
   const safeRoom = room.replace(/[^a-z0-9_\-]/gi, "_");
   return path.join(databankDir, `${safeRoom}.json`);
 }
@@ -103,7 +108,10 @@ app.post("/register", async (req, res) => {
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   const user = users[username];
-  if (!user || !bcrypt.compareSync(password, user.password)) {
+  let oo = bcrypt.compareSync(password, user.password)
+  console.log(oo)
+  if (!user || !oo) {
+    
     return res
       .status(400)
       .json({ message: "Falscher Benutzername oder Passwort!" });
